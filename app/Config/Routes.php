@@ -31,6 +31,13 @@ $routes->set404Override();
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index');
 
+// Member routes
+$routes->post("member/login", "LoginController::index", ['namespace' => 'App\Controllers\Member']);
+
+$routes->group("member", ["namespace" => "App\Controllers\Member"], function ($routes) {
+    $routes->post("registration", "RegistrationController::index", ['filter' => 'MemberAuthFilter']);
+});
+
 /*
  * --------------------------------------------------------------------
  * Additional Routing
