@@ -32,10 +32,12 @@ $routes->set404Override();
 $routes->get('/', 'Home::index');
 
 // Member routes
-$routes->post("member/login", "LoginController::index", ['namespace' => 'App\Controllers\Member']);
+$routes->post('member/login', 'LoginController::index', ['namespace' => 'App\Controllers\Member']);
 
-$routes->group("member", ["namespace" => "App\Controllers\Member"], function ($routes) {
-    $routes->post("registration", "RegistrationController::index", ['filter' => 'MemberAuthFilter']);
+$routes->group('member', ['namespace' => 'App\Controllers\Member', 'filter' => 'MemberAuthFilter'], function ($routes) {
+    $routes->post('registration', 'RegistrationController::index');
+
+    $routes->post('balance-request', 'BalanceRequestController::balanceRequest');
 });
 
 /*

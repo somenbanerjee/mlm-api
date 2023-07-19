@@ -6,11 +6,17 @@ use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\API\ResponseTrait;
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
+use Exception;
 
 class MemberAuthFilter implements FilterInterface
 {
+    use ResponseTrait;
+
+    public function __construct()
+    {
+        helper('jwt');
+    }
+
     /**
      * Do whatever processing this filter needs to do.
      * By default it should not return anything during
@@ -30,22 +36,18 @@ class MemberAuthFilter implements FilterInterface
 
     public function before(RequestInterface $request, $arguments = null)
     {
-        if ($request->hasHeader('Authorization')) {
-            $bearer_token = $request->header("Authorization");
-            if (!empty($bearer_token)) {
-                if (preg_match('/Bearer\s(\S+)/', $bearer_token, $matches)) {
-                    $token = $matches[1];
+        $bearer_token = $request->header("Authorization");
+        try {
+            $token = getJwtFromHeader($bearer_token);
 
-                    if (!empty($token)) {
-                        $key = getenv('JWT_SECRET');
-                        try {
-                            $decoded = JWT::decode($token, new Key($key, 'HS256'));
-                        } catch (\Exception $ex) {
-                            return service('response')->setBody('Access denied')->setStatusCode(401);
-                        }
-                    }
-                }
-            }
+            validateJWTForMember($token);
+            return $request;
+        } catch (Exception $ex) {
+            return service('response')->setJSON(
+                [
+                    'error' => $ex->getMessage()
+                ]
+            )->setStatusCode(ResponseInterface::HTTP_UNAUTHORIZED);
         }
     }
 

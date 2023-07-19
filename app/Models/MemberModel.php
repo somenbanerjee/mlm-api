@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
+use Exception;
 
 class MemberModel extends Model
 {
@@ -21,8 +22,10 @@ class MemberModel extends Model
         'intro_level',
         'intro_tree',
         'name',
+        'gender',
         'mobile',
         'email',
+        'pan',
         'created_by',
         'updated_by',
     ];
@@ -50,7 +53,7 @@ class MemberModel extends Model
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
-    
+
     protected function hashPassword(array $data): array
     {
         if (isset($data['data']['password'])) {
@@ -58,5 +61,25 @@ class MemberModel extends Model
         }
 
         return $data;
+    }
+
+    public function findMemberByMemberCode(string $memberCode)
+    {
+        $member = $this->asArray()->where(['member_code' => $memberCode])->first();
+
+        if (!$member) {
+            throw new Exception('Member does not exist for specified member code');
+        }
+        return $member;
+    }
+
+    public function isMemberValid(string $memberCode)
+    {
+        $member = $this->asArray()->where(['member_code' => $memberCode])->first();
+
+        if (!$member) {
+            return false;
+        }
+        return true;
     }
 }

@@ -4,13 +4,18 @@ namespace App\Controllers\Member;
 
 use App\Controllers\BaseController;
 use CodeIgniter\API\ResponseTrait;
-use Firebase\JWT\JWT;
-
+use CodeIgniter\HTTP\ResponseInterface;
 use App\Models\MemberModel;
+use Exception;
 
 class LoginController extends BaseController
 {
     use ResponseTrait;
+
+    public function __construct()
+    {
+        helper('jwt');
+    }
 
     public function index()
     {
@@ -28,38 +33,22 @@ class LoginController extends BaseController
 
             if ($member && password_verify($password, $member['password'])) {
 
-                $key = getenv('JWT_SECRET');
-                $iss = getenv('JWT_ISSUER');
-                $iat = time();
-                $exp = $iat + getenv('JWT_EXPIRES_IN');
-
-                $payload = array(
-                    'iss' => $iss,
-                    'iat' => $iat,
-                    'exp' => $exp,
-                    'data' => array(
-                        'user_type' => 'MEMBER',
-                        'member_id' => $member['member_id'],
-                        'member_code' => $member['member_code'],
-                        'name' => $member['name'],
-                    )
-                );
-
                 try {
-                    $token = JWT::encode($payload, $key, 'HS256');
+                    $token = getSignedJWTForMember($member);
+
                     $response = [
                         'status' => 'success',
                         'token' => $token,
                         'message' => 'Login Successful.'
                     ];
-                    return $this->respond($response, 200);
-                } catch (\Exception $e) {
+                    return $this->respond($response, ResponseInterface::HTTP_OK);
+                } catch (Exception $ex) {
                     $response = [
                         'status' => 'error',
-                        'data' => $e->getMessage(),
-                        'message' => 'Login Successful.'
+                        'data' => $ex->getMessage(),
+                        'message' => 'Failed to generate token.'
                     ];
-                    return $this->respond($response, 200);
+                    return $this->respond($response, ResponseInterface::HTTP_UNAUTHORIZED);
                 }
             } else {
                 $response = [
@@ -67,15 +56,15 @@ class LoginController extends BaseController
                     'data' => null,
                     'message' => 'Invalid username or password.'
                 ];
-                return $this->respond($response, 401);
+                return $this->respond($response, ResponseInterface::HTTP_UNAUTHORIZED);
             }
         } else {
             $response = [
                 'status' => 'error',
                 'data' => $this->validator->getErrors(),
-                'message' => 'Invalid Inputs'
+                'message' => 'Invalid Inputs.'
             ];
+            return $this->respond($response, ResponseInterface::HTTP_CONFLICT);
         }
-        return $this->respond($response, 409);
     }
 }
