@@ -74,7 +74,7 @@ class RegistrationController extends BaseController
             'mobile' => $mobile,
             'email' => $email,
             'created_by' => $introCode,
-            'created_on' => new Time('now')
+            'created_at' => new Time('now')
         ];
 
         $memberModel = new MemberModel();

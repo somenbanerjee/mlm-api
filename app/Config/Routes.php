@@ -37,6 +37,7 @@ $routes->post('member/login', 'LoginController::index', ['namespace' => 'App\Con
 $routes->group('member', ['namespace' => 'App\Controllers\Member', 'filter' => 'MemberAuthFilter'], function ($routes) {
     $routes->post('registration', 'RegistrationController::index');
 
+    $routes->get('balance-request', 'BalanceRequestController::GetBalanceRequest');
     $routes->post('balance-request', 'BalanceRequestController::balanceRequest');
 });
 

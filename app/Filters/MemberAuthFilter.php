@@ -40,7 +40,8 @@ class MemberAuthFilter implements FilterInterface
         try {
             $token = getJwtFromHeader($bearer_token);
 
-            validateJWTForMember($token);
+            $member = validateJWTForMember($token);
+            $request->member = $member; // if we want to pass member data back to the controller
             return $request;
         } catch (Exception $ex) {
             return service('response')->setJSON(

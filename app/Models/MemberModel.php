@@ -27,7 +27,9 @@ class MemberModel extends Model
         'email',
         'pan',
         'created_by',
+        'created_at',
         'updated_by',
+        'updated_at',
     ];
 
     // Dates

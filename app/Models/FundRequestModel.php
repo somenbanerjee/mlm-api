@@ -27,8 +27,10 @@ class FundRequestModel extends Model
         "transaction_id",
         "transaction_date",
         "request_status",
-        "created_by",
-        "updated_by",
+        'created_by',
+        'created_at',
+        'updated_by',
+        'updated_at',
     ];
 
     // Dates

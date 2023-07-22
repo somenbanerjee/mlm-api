@@ -6,12 +6,14 @@ use App\Controllers\BaseController;
 use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\HTTP\ResponseInterface;
 use App\Models\FundRequestModel;
+use CodeIgniter\I18n\Time;
 use Config\Services;
 use Exception;
 
 class BalanceRequestController extends BaseController
 {
     use ResponseTrait;
+
     public function __construct()
     {
         helper(['general']);
@@ -88,15 +90,13 @@ class BalanceRequestController extends BaseController
         $postData['member_id'] = $memberId;
         $postData['payment_mode'] = $paymentMode;
         $postData['request_token'] = $requestToken;
+        $postData['created_by'] = $memberId;
+        $postData['created_at'] = new Time('now');
 
-
-        print_r($postData);
-        //die;
         $fundRequestModel = new FundRequestModel();
         if ($fundRequestModel->save($postData)) {
             //print_r($fundRequestModel->getLastQuery());
-            echo $fundRequestModel->getLastQuery()->getQuery();
-            die;
+            //$fundRequestModel->getLastQuery()->getQuery();
             $response = [
                 'status' => 'success',
                 'data' => [
@@ -114,5 +114,52 @@ class BalanceRequestController extends BaseController
             ];
             return $this->respond($response, ResponseInterface::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    public function GetBalanceRequest()
+    {
+
+        $fundRequestModel = new FundRequestModel();
+
+        $page = $this->request->getVar('page') ?? 1;
+        $size = $this->request->getVar('size') ?? DEFAULT_PAGE_SIZE;
+        $oderBy = $this->request->getVar('order') ?? 'DESC';
+
+        $jwt = $this->request->header("Authorization");
+        $member = getMemberFromJWT($jwt);
+        $memberId = $member['memberId'];
+
+        // Filter
+        $paymentMode = $this->request->getVar('paymentMode') ?? 'ALL';
+        $dateFrom = $this->request->getVar('dateFrom') ?? '';
+        $dateTo = $this->request->getVar('dateTo') ?? '';
+
+        if ($paymentMode !== 'ALL') {
+            $fundRequestModel
+                ->where('payment_mode', $paymentMode);
+        }
+
+        if (!empty($dateFrom) && !empty($dateTo)) {
+            $fundRequestModel
+                ->where("DATE(`created_at`) BETWEEN '" . $dateFrom . "' AND '" . $dateFrom . "' ");
+        }
+        $fundRequestModel
+            ->where('member_id', $memberId)
+            ->orderBy('id', $oderBy);
+
+        $totalElements = $fundRequestModel->countAllResults(false);
+        $fundRequests = $fundRequestModel->paginate($size);
+
+        $pagination = $totalElements ? pagination($page, $size, $totalElements) : '';
+
+        $response = [
+            'status' => 'success',
+            'data' => [
+                'list' => $fundRequests,
+                'pagination' =>  $pagination
+            ],
+            'message' => 'Data found.'
+        ];
+        return $this->respond($response, ResponseInterface::HTTP_OK);
     }
 }

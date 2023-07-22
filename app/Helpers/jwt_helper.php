@@ -22,7 +22,8 @@ if (!function_exists("validateJwtForMember")) {
         $decoded_token = JWT::decode($token, new Key($key, 'HS256'));
 
         $MemberModel = new MemberModel();
-        $MemberModel->findMemberByMemberCode($decoded_token->data->memberCode);
+        $member = $MemberModel->findMemberByMemberCode($decoded_token->data->memberCode);
+        return  $member;
     }
 }
 

@@ -2,6 +2,28 @@
 
 use App\Models\MemberModel;
 
+if (!function_exists("pagination")) {
+    function pagination($page, $size, $totalElements): array
+    {
+        $currentPage = (int) $page;
+        $totalPages = ceil((int)$totalElements / (int)$size);
+        $firstPage = ($currentPage === 1);
+        $lastPage = ((int)$currentPage === (int)$totalPages);
+        $previousPage = $firstPage ? null : $currentPage - 1;
+        $nextPage = $lastPage ? null : $currentPage + 1;
+        return [
+            'currentPage' => $currentPage,
+            'nextPage' => $nextPage,
+            'previousPage' => $previousPage,
+            'firstPage' => $firstPage,
+            'lastPage' => $lastPage,
+            'pageSize' => (int)$size,
+            'totalElements' => (int)$totalElements,
+            'totalPages' => $totalPages,
+        ];
+    }
+}
+
 if (!function_exists("generateTransactionId")) {
     function generateTransactionId(string $prefix): string
     {

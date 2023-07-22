@@ -100,3 +100,4 @@ define('EVENT_PRIORITY_HIGH', 10);
  |--------------------------------------------------------------------------
  */
 define('USERNAME_PREFIX', 'ZM');
+define('DEFAULT_PAGE_SIZE', 2);

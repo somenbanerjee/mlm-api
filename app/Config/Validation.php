@@ -86,7 +86,7 @@ class Validation extends BaseConfig
         ],
         'fromUpiId' => [
             'label' => 'From UPI Id',
-            'rules' => 'required|numeric|min_length[6]',
+            'rules' => 'required|min_length[6]',
         ],
         'transactionId' => [
             'label' => 'Transaction Id',
