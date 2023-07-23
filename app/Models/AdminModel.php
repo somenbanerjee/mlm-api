@@ -3,35 +3,18 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
+use Exception;
 
-class FundRequestModel extends Model
+class AdminModel extends Model
 {
     protected $DBGroup          = 'default';
-    protected $table            = 'fund_requests';
+    protected $table            = 'admins';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = [
-        "request_token",
-        "member_id",
-        "amount",
-        "payment_mode",
-        "to_person_name",
-        "from_bank_ac_no",
-        "from_ac_holder_name",
-        "from_bank_name",
-        "from_ifsc",
-        "from_upi_id",
-        "transaction_id",
-        "transaction_date",
-        "request_status",
-        'created_by',
-        'created_at',
-        'updated_by',
-        'updated_at',
-    ];
+    protected $allowedFields    = ['username', 'password', 'name'];
 
     // Dates
     protected $useTimestamps = true;
@@ -56,4 +39,24 @@ class FundRequestModel extends Model
     protected $afterFind      = [];
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
+
+    public function findAdminByUsername(string $username)
+    {
+        $admin = $this->asArray()->where(['username' => $username])->first();
+
+        if (!$admin) {
+            throw new Exception('Member does not exist for specified member code');
+        }
+        return $admin;
+    }
+
+    public function isAdminValid(string $username)
+    {
+        $admin = $this->asArray()->where(['username' => $username])->first();
+
+        if (!$admin) {
+            return false;
+        }
+        return true;
+    }
 }

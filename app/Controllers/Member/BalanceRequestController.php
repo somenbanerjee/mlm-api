@@ -116,7 +116,7 @@ class BalanceRequestController extends BaseController
         }
     }
 
-    public function GetBalanceRequest()
+    public function getBalanceRequest()
     {
 
         $fundRequestModel = new FundRequestModel();

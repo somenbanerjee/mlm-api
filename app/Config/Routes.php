@@ -37,10 +37,17 @@ $routes->post('member/login', 'LoginController::index', ['namespace' => 'App\Con
 $routes->group('member', ['namespace' => 'App\Controllers\Member', 'filter' => 'MemberAuthFilter'], function ($routes) {
     $routes->post('registration', 'RegistrationController::index');
 
-    $routes->get('balance-request', 'BalanceRequestController::GetBalanceRequest');
+    $routes->get('balance-request', 'BalanceRequestController::getBalanceRequest');
     $routes->post('balance-request', 'BalanceRequestController::balanceRequest');
 });
 
+// Member routes
+$routes->post('admin/login', 'adminController::login', ['namespace' => 'App\Controllers\Admin']);
+
+$routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'AdminAuthFilter'], function ($routes) {
+    $routes->get('balance-request', 'BalanceRequestController::getBalanceRequest');
+    $routes->put('update-balance-request-status', 'BalanceRequestController::updateRequestStatus');
+});
 /*
  * --------------------------------------------------------------------
  * Additional Routing
