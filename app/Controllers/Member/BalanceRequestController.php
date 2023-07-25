@@ -8,7 +8,6 @@ use CodeIgniter\HTTP\ResponseInterface;
 use App\Models\FundRequestModel;
 use CodeIgniter\I18n\Time;
 use Config\Services;
-use Exception;
 
 class BalanceRequestController extends BaseController
 {

@@ -24,9 +24,6 @@ class BalanceRequestController extends BaseController
 
     public function getBalanceRequest()
     {
-
-
-
         $page = $this->request->getVar('page') ?? 1;
         $size = $this->request->getVar('size') ?? DEFAULT_PAGE_SIZE;
         $oderBy = $this->request->getVar('order') ?? 'DESC';
@@ -77,6 +74,7 @@ class BalanceRequestController extends BaseController
             'balanceRequestId' => 'required|is_natural_no_zero',
             'action' => 'required|in_list[accept,reject]',
         ];
+
         if ($this->validate($rules)) {
             $balanceRequestId = $this->request->getVar('balanceRequestId');
             $action = $this->request->getVar('action');
@@ -112,7 +110,7 @@ class BalanceRequestController extends BaseController
                     ],
                     'message' => 'Balance request is ' . $action . 'ed successfully.'
                 ];
-                return $this->respond($response, ResponseInterface::HTTP_NOT_FOUND);
+                return $this->respond($response, ResponseInterface::HTTP_CREATED);
             } else {
                 $response = [
                     'status' => 'error',

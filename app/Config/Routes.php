@@ -39,9 +39,14 @@ $routes->group('member', ['namespace' => 'App\Controllers\Member', 'filter' => '
 
     $routes->get('balance-request', 'BalanceRequestController::getBalanceRequest');
     $routes->post('balance-request', 'BalanceRequestController::balanceRequest');
+
+    $routes->get('wallet-balance', 'WalletController::getBalance');
+    $routes->get('wallet-transactions', 'WalletController::getTransactions');
+    
 });
 
-// Member routes
+
+// Admin routes
 $routes->post('admin/login', 'adminController::login', ['namespace' => 'App\Controllers\Admin']);
 
 $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'AdminAuthFilter'], function ($routes) {
