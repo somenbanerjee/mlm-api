@@ -10,6 +10,10 @@ use Exception;
 
 class AdminAuthFilter implements FilterInterface
 {
+    public function __construct()
+    {
+        helper('jwt');
+    }
     /**
      * Do whatever processing this filter needs to do.
      * By default it should not return anything during

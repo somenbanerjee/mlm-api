@@ -69,9 +69,9 @@ class BalanceRequestController extends BaseController
      * Update the balance request status to accept / reject.
      * Check if the input id is present and pending.
      * On reject just update the status.
-     * On accept  update the status and the wallet balance of that member.
+     * On accept  update the status and the wallet balance of that member (with a MySQL trigger.).
      */
-    public function updateRequestStatus(): string
+    public function updateRequestStatus()
     {
         $rules = [
             'balanceRequestId' => 'required|is_natural_no_zero',
@@ -83,31 +83,41 @@ class BalanceRequestController extends BaseController
 
 
             $fundRequest = $this->fundRequestModel
-                ->select('member_id', 'amount')
-                ->asArray()->where(['id' => $balanceRequestId, 'fundRequest' => 'pending'])->first();
+                ->select(['member_id', 'amount', 'request_status'])
+                ->asArray()->where(['id' => $balanceRequestId])->first();
+
             if ($fundRequest) {
-                if ($action === 'reject') {
-                    $this->fundRequestModel
-                        ->set('status', $action)
-                        ->where('id', $balanceRequestId)
-                        ->update();
+                if ($fundRequest['request_status'] !== 'pending') {
                     $response = [
-                        'status' => 'success',
+                        'status' => 'error',
                         'data' => [
                             'amount' => $fundRequest['amount'],
                             'action' => $action
                         ],
-                        'message' => 'Balance request is rejected successfully.'
+                        'message' => 'Balance request is already ' . $fundRequest['request_status'] . 'ed.'
                     ];
-                    return $this->respond($response, ResponseInterface::HTTP_NOT_FOUND);
-                } else {
-                    
+                    return $this->respond($response, ResponseInterface::HTTP_OK);
                 }
+
+                $this->fundRequestModel
+                    ->set(['request_status' => $action, 'updated_by' => $this->request->admin->username])
+                    ->where('id', $balanceRequestId)
+                    ->update();
+                //echo $this->fundRequestModel->getLastQuery()->getQuery();
+                $response = [
+                    'status' => 'success',
+                    'data' => [
+                        'amount' => $fundRequest['amount'],
+                        'action' => $action
+                    ],
+                    'message' => 'Balance request is ' . $action . 'ed successfully.'
+                ];
+                return $this->respond($response, ResponseInterface::HTTP_NOT_FOUND);
             } else {
                 $response = [
                     'status' => 'error',
                     'data' => null,
-                    'message' => 'No pending request found.'
+                    'message' => 'No data found.'
                 ];
                 return $this->respond($response, ResponseInterface::HTTP_NOT_FOUND);
             }
@@ -119,6 +129,5 @@ class BalanceRequestController extends BaseController
             ];
             return $this->respond($response, ResponseInterface::HTTP_CONFLICT);
         }
-        return "ok";
     }
 }

@@ -42,7 +42,7 @@ class AdminModel extends Model
 
     public function findAdminByUsername(string $username)
     {
-        $admin = $this->asArray()->where(['username' => $username])->first();
+        $admin = $this->asObject()->where(['username' => $username])->first();
 
         if (!$admin) {
             throw new Exception('Member does not exist for specified member code');

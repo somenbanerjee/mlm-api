@@ -46,7 +46,7 @@ $routes->post('admin/login', 'adminController::login', ['namespace' => 'App\Cont
 
 $routes->group('admin', ['namespace' => 'App\Controllers\Admin', 'filter' => 'AdminAuthFilter'], function ($routes) {
     $routes->get('balance-request', 'BalanceRequestController::getBalanceRequest');
-    $routes->put('update-balance-request-status', 'BalanceRequestController::updateRequestStatus');
+    $routes->put('balance-request', 'BalanceRequestController::updateRequestStatus');
 });
 /*
  * --------------------------------------------------------------------
