@@ -42,7 +42,9 @@ $routes->group('member', ['namespace' => 'App\Controllers\Member', 'filter' => '
 
     $routes->get('wallet-balance', 'WalletController::getBalance');
     $routes->get('wallet-transactions', 'WalletController::getTransactions');
-    
+
+    $routes->get('packages', 'PackageController::getAllPackages');
+    $routes->get('package-activation', 'PackageController::packageActivation');
 });
 
 

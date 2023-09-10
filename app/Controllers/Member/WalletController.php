@@ -5,8 +5,6 @@ namespace App\Controllers\Member;
 use App\Controllers\BaseController;
 use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\HTTP\ResponseInterface;
-use CodeIgniter\I18n\Time;
-use Config\Services;
 use App\Models\FundWalletBalanceModel;
 use App\Models\FundWalletTransactionModel;
 
@@ -68,8 +66,8 @@ class WalletController extends BaseController
                     'in_list' => 'Wallet name is invalid.'
                 ],
             ],
-            'dateFrom' => 'permit_empty|valid_date|required_with[dateTo]',
-            'dateTo' => 'permit_empty|valid_date|required_with[dateFrom]',
+            'fromDate' => 'permit_empty|valid_date|required_with[toDate]',
+            'toDate' => 'permit_empty|valid_date|required_with[fromDate]',
             'page' => 'permit_empty|is_natural_no_zero',
             'size' => 'permit_empty|is_natural_no_zero',
             'oderBy' => 'permit_empty|in_list[desc,asc]',
@@ -82,37 +80,37 @@ class WalletController extends BaseController
                 $walletTransactionModel = new FundWalletTransactionModel();
             }
 
-            $page = $this->request->getVar('page') ?? 1;
-            $size = $this->request->getVar('size') ?? DEFAULT_PAGE_SIZE;
+            // Filters
+            $perPage = $this->request->getVar('size') ?? DEFAULT_PAGE_SIZE;
             $oderBy = $this->request->getVar('order') ?? 'DESC';
 
-            // Filters
-            $dateFrom = $this->request->getVar('dateFrom') ?? '';
-            $dateTo = $this->request->getVar('dateTo') ?? '';
+            $fromDate = $this->request->getVar('fromDate') ?? '';
+            $toDate = $this->request->getVar('toDate') ?? '';
 
             $jwt = $this->request->header("Authorization");
             $member = getMemberFromJWT($jwt);
             $memberId = $member['memberId'];
 
-            if (!empty($dateFrom) && !empty($dateTo)) {
+            if (!empty($fromDate) && !empty($toDate)) {
                 $walletTransactionModel
-                    ->where("DATE(`created_at`) BETWEEN '" . $dateFrom . "' AND '" . $dateFrom . "' ");
+                    ->where("DATE(`created_at`) BETWEEN '" . $fromDate . "' AND '" . $fromDate . "' ");
             }
             $walletTransactionModel
                 ->where('member_id', $memberId)
                 ->orderBy('id', $oderBy);
 
-            $totalElements = $walletTransactionModel->countAllResults(false);
-            $walletTransactions = $walletTransactionModel->paginate($size);
+            $walletTransactions = $walletTransactionModel->paginate($perPage);
 
-            $pagination = $totalElements ? pagination($page, $size, $totalElements) : '';
+            // Load pager instance
+            $pager = $walletTransactionModel->pager;
+            $totalElements = $pager->getTotal();
+
+            $pagination = $totalElements ? generatePagination($pager) : '';
 
             $response = [
                 'status' => 'success',
-                'data' => [
-                    'list' => $walletTransactions,
-                    'pagination' =>  $pagination
-                ],
+                'data' => $walletTransactions,
+                'pagination' =>  $pagination,
                 'message' => 'Data found.'
             ];
             return $this->respond($response, ResponseInterface::HTTP_OK);

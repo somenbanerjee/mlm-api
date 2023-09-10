@@ -3,7 +3,7 @@
 use App\Models\MemberModel;
 
 if (!function_exists("pagination")) {
-    function pagination($page, $size, $totalElements): array
+    /* function pagination($page, $size, $totalElements): array
     {
         $currentPage = (int) $page;
         $totalPages = ceil((int)$totalElements / (int)$size);
@@ -20,6 +20,27 @@ if (!function_exists("pagination")) {
             'pageSize' => (int)$size,
             'totalElements' => (int)$totalElements,
             'totalPages' => $totalPages,
+        ];
+    } */
+
+    /**
+     * It takes the Pager instance and generates necessary pagination data and links in a Array.
+     * Have to call after calling $this->paginate();
+     * @return array|null
+     */
+    function generatePagination($pager): array
+    {
+        return [
+            'currentPage' => $pager->getCurrentPage(),
+            'hasMore' => $pager->hasMore(),
+            'firstPage' => $pager->getFirstPage(),
+            'lastPage' => $pager->getLastPage(),
+            'perPage' => $pager->getPerPage(),
+            'totalCount' => $pager->getPageCount(),
+            'first' => $pager->getPageURI($pager->getFirstPage()),
+            'next' => $pager->getNextPageURI(),
+            'previous' => $pager->getPreviousPageURI(),
+            'last' => $pager->getPageURI($pager->getLastPage()),
         ];
     }
 }

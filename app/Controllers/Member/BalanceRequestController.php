@@ -117,46 +117,50 @@ class BalanceRequestController extends BaseController
 
     public function getBalanceRequest()
     {
-
+        // Load the model
         $fundRequestModel = new FundRequestModel();
 
-        $page = $this->request->getVar('page') ?? 1;
-        $size = $this->request->getVar('size') ?? DEFAULT_PAGE_SIZE;
+        // Filters
+        $perPage = $this->request->getVar('size') ?? DEFAULT_PAGE_SIZE;
         $oderBy = $this->request->getVar('order') ?? 'DESC';
 
+        $paymentMode = $this->request->getVar('paymentMode') ?? 'ALL';
+        $fromDate = $this->request->getVar('fromDate') ?? '';
+        $toDate = $this->request->getVar('toDate') ?? '';
+
+        // get member id from JWT token
         $jwt = $this->request->header("Authorization");
         $member = getMemberFromJWT($jwt);
         $memberId = $member['memberId'];
 
-        // Filter
-        $paymentMode = $this->request->getVar('paymentMode') ?? 'ALL';
-        $dateFrom = $this->request->getVar('dateFrom') ?? '';
-        $dateTo = $this->request->getVar('dateTo') ?? '';
-
+        // Generate the SQL query according to the filters.
         if ($paymentMode !== 'ALL') {
             $fundRequestModel
                 ->where('payment_mode', $paymentMode);
         }
 
-        if (!empty($dateFrom) && !empty($dateTo)) {
+        if (!empty($fromDate) && !empty($toDate)) {
             $fundRequestModel
-                ->where("DATE(`created_at`) BETWEEN '" . $dateFrom . "' AND '" . $dateFrom . "' ");
+                ->where("DATE(`created_at`) BETWEEN '" . $fromDate . "' AND '" . $toDate . "' ");
         }
         $fundRequestModel
             ->where('member_id', $memberId)
             ->orderBy('id', $oderBy);
 
-        $totalElements = $fundRequestModel->countAllResults(false);
-        $fundRequests = $fundRequestModel->paginate($size);
+        // Run the query with paginate()
+        $fundRequests = $fundRequestModel->paginate($perPage);
 
-        $pagination = $totalElements ? pagination($page, $size, $totalElements) : '';
+        // Load pager instance
+        $pager = $fundRequestModel->pager;
+        $totalElements = $pager->getTotal();
+
+        // On find any data generate pagination data/links by calling the generatePagination helper function   
+        $pagination = $totalElements ? generatePagination($pager) : '';
 
         $response = [
             'status' => 'success',
-            'data' => [
-                'list' => $fundRequests,
-                'pagination' =>  $pagination
-            ],
+            'data' => $fundRequests,
+            'pagination' =>  $pagination,
             'message' => 'Data found.'
         ];
         return $this->respond($response, ResponseInterface::HTTP_OK);
